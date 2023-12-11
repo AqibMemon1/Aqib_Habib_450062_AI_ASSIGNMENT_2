@@ -8,7 +8,7 @@ struct PuzzleState {
     vector<vector<int>> board;
     int heuristic;
     int moves;
-    vector<vector<int>> path;
+    vector<vector<vector<int>>> path;
 
     PuzzleState(const vector<vector<int>>& b, int h, int m) : board(b), heuristic(h), moves(m) {}
 };
@@ -70,6 +70,11 @@ void AStar_h1(const vector<vector<int>>& initial, const vector<vector<int>>& goa
         if (isBoardsEqual(current.board, goal)) {
             cout << "Goal State Found!" << endl;
             cout << "Number of moves: " << current.moves << endl;
+            cout << "Path to the goal state:" << endl;
+            for (const auto& pathBoard : current.path) {
+                printBoard(pathBoard);
+                cout << endl;
+            }
             return;
         }
 
@@ -100,6 +105,8 @@ void AStar_h1(const vector<vector<int>>& initial, const vector<vector<int>>& goa
                 if (visited.find(newBoardString) == visited.end()) {
                     int newHeuristic = calculateHeuristic(newBoard, goal);
                     PuzzleState nextState(newBoard, newHeuristic, current.moves + 1);
+                    nextState.path = current.path; // Copy path from the current state
+                    nextState.path.push_back(newBoard); // Add new state to the path
                     pq.emplace(nextState);
                 }
             }
@@ -115,6 +122,9 @@ int main() {
 
     cout << "Initial State:" << endl;
     printBoard(initial);
+    cout << "\n";
+    cout << "Goal State:" << endl;
+    printBoard(goal);
 
     cout << "\nSolving the Puzzle...\n" << endl;
     AStar_h1(initial, goal);

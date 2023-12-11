@@ -4,14 +4,16 @@
 #include <unordered_set>
 using namespace std;
 
-struct PuzzleState {
+struct PuzzleState
+{
     vector<vector<int>> board;
     int heuristic;
     int moves;
-    vector<vector<int>> path;
+    vector<vector<vector<int>>> path;
 
-    PuzzleState(const vector<vector<int>>& b, int h, int m) : board(b), heuristic(h), moves(m) {}
+    PuzzleState(vector<vector<int>> b,int h, int m) : board(b), heuristic(h), moves(m) {}
 };
+
 void printBoard(const vector<vector<int>>& board) {
     for (int i=0;i<3;i++) {
         for (int j=0;j<3;j++) {
@@ -70,7 +72,13 @@ void GBFS_h1(const vector<vector<int>>& initial, const vector<vector<int>>& goal
         if (isBoardsEqual(current.board, goal)) {
             cout << "Goal State Found!" << endl;
             cout << "Number of moves: " << current.moves << endl;
-            
+
+            cout << "Path to the goal state:" << endl;
+            for (const auto& pathBoard : current.path) {
+                printBoard(pathBoard);
+                cout << endl;
+            }
+
             return;
         
         }
@@ -80,8 +88,7 @@ void GBFS_h1(const vector<vector<int>>& initial, const vector<vector<int>>& goal
 
         // Insert the string representation into the unordered_set
         visited.insert(currentBoardString);
-        // printBoard(curr);
-        //     cout << endl;
+     
    // Find the position of the empty space (0)
         int zeroX, zeroY;
         for (int i = 0; i < 3; ++i) {
@@ -102,17 +109,20 @@ void GBFS_h1(const vector<vector<int>>& initial, const vector<vector<int>>& goal
             int newY = zeroY + dir.second;
 
             if (newX >= 0 && newX < 3 && newY >= 0 && newY < 3) {
-                vector<vector<int>> newBoard = current.board;
-                swap(newBoard[zeroX][zeroY], newBoard[newX][newY]);
+                vector<vector<int>> newBoard = current.board; // creates a vector newBoard with currentBoard values
+                swap(newBoard[zeroX][zeroY], newBoard[newX][newY]); // swaps the value of zero
                 string newBoardString = boardToString(newBoard);
-                if (visited.find(newBoardString) == visited.end()) {
+                if (visited.find(newBoardString) == visited.end()) { // loop to check if the state has been visited or not
                     int newHeuristic = calculateHeuristic(newBoard, goal);
                     PuzzleState nextState(newBoard, newHeuristic, current.moves + 1);
+                    nextState.path = current.path; // Copy path from the current state
+                    nextState.path.push_back(newBoard); // Add new state to the path
                     pq.emplace(nextState);
                 }
             }
         }
     }
+
 
     cout << "Goal State Not Reachable!" << endl;
 }
@@ -123,6 +133,9 @@ int main() {
 
     cout << "Initial State:" << endl;
     printBoard(initial);
+    cout << "\n";
+    cout << "Goal State:" << endl;
+    printBoard(goal);
 
     cout << "\nSolving the Puzzle...\n" << endl;
     GBFS_h1(initial, goal);
